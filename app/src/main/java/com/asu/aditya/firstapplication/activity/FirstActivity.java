@@ -1,6 +1,5 @@
 package com.asu.aditya.firstapplication.activity;
 
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +13,10 @@ import android.widget.Toast;
 
 import com.asu.aditya.firstapplication.R;
 import com.asu.aditya.firstapplication.views.GraphView;
+
+/**
+ * Created by aditya on 9/5/16.
+ */
 
 public class FirstActivity extends Activity implements View.OnClickListener {
     /**
@@ -30,6 +33,9 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     private boolean runnable = false;
     private Button btnStartGraph, btnStopGraph;
     private Toolbar toolbar;
+
+    //Random number assigned for message which is our group number
+    private static final int CLOCK_TICK = 22;
 
     private String patient_name, patient_age, patient_id, patient_sex;
     private EditText etPatientName, etPatientAge, etPatientId;
@@ -61,12 +67,24 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         graph.addView(graphView);
     }
 
+
+    /*
+    Stop the background thread when activity is
+    destroyed or when user press back button
+     */
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         runnable = false;
     }
 
+
+    /*
+    setGraph method will receive the value from handler
+    and append the value to values[] array in the end.
+    After that values array is set to GraphView's values
+     */
     public void setGraph(int data) {
         for (int i = 0; i < values.length - 1; i++) {
             values[i] = values[i + 1];
@@ -77,26 +95,36 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         graphView.invalidate();
     }
 
+    /*
+    This handler of the main thread receives the CLOCK_TICK
+    message from the backgroup thread and generate a random
+    value using Math.random function between range of 0 to 600
+     */
     public Handler handler = new Handler() {
         @Override
         public void handleMessage(android.os.Message msg) {
             switch (msg.what) {
 
-                case 0x01:
-                    int testValue = (int) (Math.random() * 600) + 1;
+                case CLOCK_TICK:
+                    int testValue = (int) (Math.random() * 600);
                     setGraph(testValue);
                     break;
             }
         }
     };
 
+    /*
+    RunGraph is a Class that extends Thread Class
+    This thread generates a trigger to its Handler
+    after every 500ms to generate a random value.
+     */
     public class RunGraph extends Thread {
         @Override
         public void run() {
             while (runnable) {
-                handler.sendEmptyMessage(0x01);
+                handler.sendEmptyMessage(CLOCK_TICK);
                 try {
-                    Thread.sleep(300);
+                    Thread.sleep(500);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -104,12 +132,21 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         }
     }
 
+
+    /*
+    This is overridden function from View.OnClickListener interface
+    with following Functionalities :
+    1.) Start or Stop the thread by setting the value of runnable
+    2.) Set the UI of different components accordingly.
+
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.start_graph:
                 if (validateInputs()) {
                     runnable = true;
+                    Toast.makeText(this, "Graph Running", Toast.LENGTH_SHORT).show();
                     new RunGraph().start();
                     graphView.setTitle(patient_name);
                     btnStartGraph.setEnabled(false);
@@ -122,6 +159,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.stop_graph:
                 runnable = false;
+                Toast.makeText(this, "Graph Cleared", Toast.LENGTH_SHORT).show();
                 values = new float[60];
                 graphView.setValues(values);
                 graphView.setTitle(null);
@@ -135,6 +173,12 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    /*
+    * validateInputs() function is used to check whether
+    * user has filled every field or not
+    *
+    * return false if any of the field is empty and true otherwise
+    */
     private Boolean validateInputs() {
         patient_age = etPatientAge.getText().toString();
         patient_id = etPatientId.getText().toString();
@@ -152,7 +196,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
             Toast.makeText(this, "Please fill inputs first!!", Toast.LENGTH_SHORT).show();
             return false;
         } else {
-            Toast.makeText(this, "AGE : " + patient_age + " ID : " + patient_id + " NAME : " + patient_name + " SEX : " + patient_sex, Toast.LENGTH_LONG).show();
+//            Toast.makeText(this, "AGE : " + patient_age + " ID : " + patient_id + " NAME : " + patient_name + " SEX : " + patient_sex, Toast.LENGTH_LONG).show();
             return true;
         }
 

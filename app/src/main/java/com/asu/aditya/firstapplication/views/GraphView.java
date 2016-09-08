@@ -39,6 +39,10 @@ public class GraphView extends View {
         paint = new Paint();
     }
 
+    /*
+    setValues method is used my FirstActivity
+    to send updated values to the graph view.
+     */
     public void setValues(float[] newValues) {
         this.values = newValues;
     }
@@ -124,8 +128,6 @@ public class GraphView extends View {
         for (int i = 0; i < values.length; i++)
             if (values[i] > largest)
                 largest = values[i];
-
-        //largest = 3000;
         return largest;
     }
 
@@ -134,8 +136,6 @@ public class GraphView extends View {
         for (int i = 0; i < values.length; i++)
             if (values[i] < smallest)
                 smallest = values[i];
-
-        //smallest = 0;
         return smallest;
     }
 
