@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -15,7 +16,7 @@ import com.asu.aditya.firstapplication.R;
 import com.asu.aditya.firstapplication.views.GraphView;
 
 /**
- * Created by aditya on 9/5/16.
+ * Created by group22 on 9/5/16.
  */
 
 public class FirstActivity extends Activity implements View.OnClickListener {
@@ -40,6 +41,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     private String patient_name, patient_age, patient_id, patient_sex;
     private EditText etPatientName, etPatientAge, etPatientId;
     private RadioGroup sexRadioGroup;
+    private RadioButton btnRadioMale, btnRadioFemale;
 
 
     @Override
@@ -55,6 +57,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         etPatientName = (EditText) findViewById(R.id.patient_name);
         etPatientId = (EditText) findViewById(R.id.patient_id);
         sexRadioGroup = (RadioGroup) findViewById(R.id.radioSex);
+        btnRadioMale = (RadioButton) findViewById(R.id.radioMale);
+        btnRadioFemale = (RadioButton) findViewById(R.id.radioFemale);
 
         toolbar.setTitle("Group 22 - Assignment 1");
         graphView = new GraphView(FirstActivity.this, horizontalLabels, verticalLabels, GraphView.LINE);
@@ -82,7 +86,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
 
     /*
     setGraph method will receive the value from handler
-    and append the value to values[] array in the end.
+    and append the value to values[] array.
     After that values array is set to GraphView's values
      */
     public void setGraph(int data) {
@@ -97,7 +101,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
 
     /*
     This handler of the main thread receives the CLOCK_TICK
-    message from the backgroup thread and generate a random
+    message from the background thread and generate a random
     value using Math.random function between range of 0 to 600
      */
     public Handler handler = new Handler() {
@@ -154,6 +158,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
                     etPatientName.setEnabled(false);
                     etPatientId.setEnabled(false);
                     sexRadioGroup.setEnabled(false);
+                    btnRadioMale.setEnabled(false);
+                    btnRadioFemale.setEnabled(false);
                     btnStopGraph.setEnabled(true);
                 }
                 break;
@@ -169,6 +175,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
                 etPatientName.setEnabled(true);
                 etPatientId.setEnabled(true);
                 sexRadioGroup.setEnabled(true);
+                btnRadioMale.setEnabled(true);
+                btnRadioFemale.setEnabled(true);
                 btnStopGraph.setEnabled(false);
         }
     }
@@ -196,7 +204,6 @@ public class FirstActivity extends Activity implements View.OnClickListener {
             Toast.makeText(this, "Please fill inputs first!!", Toast.LENGTH_SHORT).show();
             return false;
         } else {
-//            Toast.makeText(this, "AGE : " + patient_age + " ID : " + patient_id + " NAME : " + patient_name + " SEX : " + patient_sex, Toast.LENGTH_LONG).show();
             return true;
         }
 
