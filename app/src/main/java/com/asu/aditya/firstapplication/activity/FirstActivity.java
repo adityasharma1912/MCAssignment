@@ -34,7 +34,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
      * horlabel : Background Width Values
      * values : Max Values of Foreground Active Graph
      */
-    private float[] values = new float[60];
+    private float[] values = new float[10];
     private String[] verticalLabels = new String[]{"20", "18", "16", "14", "12", "10", "8", "6", "4", "2", "0",};
     private String[] horizontalLabels = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
     private GraphView graphView;
@@ -43,9 +43,6 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     private Button btnStartGraph, btnStopGraph;
     private Toolbar toolbar;
     private Intent serviceIntent;
-
-    //Random number assigned for message which is our group number
-    private static final int CLOCK_TICK = 22;
 
     private String patient_name, patient_age, patient_id, patient_sex;
     private EditText etPatientName, etPatientAge, etPatientId;
@@ -106,6 +103,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
             Log.v(TAG, "OnServiceConnected");
             AccelerometerService.LocalBinder localBinder = (AccelerometerService.LocalBinder) service;
             mAccelerometerService = localBinder.getService();
+            mAccelerometerService.setHandler(handler);
             mBound = true;
         }
 
@@ -124,6 +122,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        stopService(serviceIntent);
         runnable = false;
     }
 
@@ -133,12 +132,13 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     and append the value to values[] array.
     After that values array is set to GraphView's values
      */
-    public void setGraph(int data) {
+    public void setGraph(float data) {
         for (int i = 0; i < values.length - 1; i++) {
             values[i] = values[i + 1];
         }
 
-        values[values.length - 1] = (float) data;
+        values[values.length - 1] = data + 10; //10 added because accelerometer values vary between
+        // -10 to10 hence keeping everything +ve and in range of 0 to 20
         graphView.setValues(values);
         graphView.invalidate();
     }
@@ -153,33 +153,22 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         public void handleMessage(android.os.Message msg) {
             switch (msg.what) {
 
-                case CLOCK_TICK:
-                    int testValue = (int) (Math.random() * 600);
+                case AccelerometerService.CLOCK_TICK:
+                    float testValue = msg.getData().getFloat("AxisValue");
                     setGraph(testValue);
                     break;
             }
         }
     };
 
-    /*
-    RunGraph is a Class that extends Thread Class
-    This thread generates a trigger to its Handler
-    after every 500ms to generate a random value.
-     */
-    public class RunGraph extends Thread {
-        @Override
-        public void run() {
-            while (runnable) {
-                handler.sendEmptyMessage(CLOCK_TICK);
-                try {
-                    Thread.sleep(500);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+    private void fetchPreviousData(String tableName, int whichAxis) {
+        values = mAccelerometerService.fetchInitialSetOfValues(tableName, whichAxis);
+        //setting fetched data on GraphView...
+        graphView.setValues(values);
+        graphView.invalidate();
+        if (mAccelerometerService != null)
+            mAccelerometerService.startFetchingData();
     }
-
 
     /*
     This is overridden function from View.OnClickListener interface
@@ -193,9 +182,6 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         switch (v.getId()) {
             case R.id.start_graph:
                 if (validateInputs()) {
-                    runnable = true;
-                    Toast.makeText(this, "Graph Running", Toast.LENGTH_SHORT).show();
-                    new RunGraph().start();
                     graphView.setTitle(patient_name);
                     btnStartGraph.setEnabled(false);
                     etPatientAge.setEnabled(false);
@@ -205,18 +191,18 @@ public class FirstActivity extends Activity implements View.OnClickListener {
                     btnRadioMale.setEnabled(false);
                     btnRadioFemale.setEnabled(false);
                     btnStopGraph.setEnabled(true);
+                    String tableName = patient_name + "_"
+                            + patient_id + "_" + patient_age + "_" + patient_sex;
+                    fetchPreviousData(tableName, 0);
                 }
                 break;
             case R.id.stop_graph:
                 //test code
-                if (true) {
-                    stopService(serviceIntent);
-                    return;
-                }
+                if (mAccelerometerService != null)
+                    mAccelerometerService.stopFetchingData();
                 //test code ends
-                runnable = false;
                 Toast.makeText(this, "Graph Cleared", Toast.LENGTH_SHORT).show();
-                values = new float[60];
+                values = new float[10];
                 graphView.setValues(values);
                 graphView.setTitle(null);
                 graphView.invalidate();
