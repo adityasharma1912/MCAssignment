@@ -1,26 +1,23 @@
 package com.asu.aditya.firstapplication.services;
 
 import android.app.Service;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.asu.aditya.firstapplication.database.PatientDbHelper;
 
 /**
  * Created by aditya on 10/1/16.
@@ -37,8 +34,10 @@ public class AccelerometerService extends Service implements SensorEventListener
     private Handler mHandler;
     private String tableName;
     private int whichAxis;
+    PatientDbHelper patientDbHelper;
     //Random number assigned for message which is our group number
     public static final int CLOCK_TICK = 22;
+    public static final int CLEAR_GRAPH = 23;
 
     public class LocalBinder extends Binder {
         public AccelerometerService getService() {
@@ -49,12 +48,17 @@ public class AccelerometerService extends Service implements SensorEventListener
     @Override
     public void onCreate() {
         super.onCreate();
-        try {
-            String externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
-            mDataBase = SQLiteDatabase.openOrCreateDatabase(externalStorageDirectory + "/databaseFolder/group22Db", null);
-        } catch (SQLiteException se) {
-            se.printStackTrace();
-        }
+
+        //create database in external directory...
+        patientDbHelper = new PatientDbHelper(getApplicationContext());
+//
+//        try {
+//            String externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
+//            mDataBase = openOrCreateDatabase(externalStorageDirectory + "/databaseFolder/group22.db", SQLiteDatabase.CREATE_IF_NECESSARY|SQLiteDatabase.OPEN_READWRITE, null);
+////            mDataBase = SQLiteDatabase.openOrCreateDatabase(externalStorageDirectory + "/databaseFolder/group22.db", SQLiteDatabase.CREATE_IF_NECESSARY,null);
+//        } catch (SQLiteException se) {
+//            se.printStackTrace();
+//        }
         Toast.makeText(this, "Service Started", Toast.LENGTH_LONG).show();
         accelerometerManage = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senseAccelerometer = accelerometerManage.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -87,88 +91,8 @@ public class AccelerometerService extends Service implements SensorEventListener
     public float[] fetchInitialSetOfValues(String tableName, int whichValue) {
         this.tableName = tableName;
         this.whichAxis = whichValue;
-        float savedXValues[] = new float[10];
-        float savedYValues[] = new float[10];
-        float savedZValues[] = new float[10];
-        float value[] = new float[10];
-        Cursor cursor;
-        boolean tableExists = false;
-        String[] projection = {"xValue", "yValue", "zValue"};
-        String sortBy = "timeStamp DESC";
-
-        try {
-            cursor = mDataBase.query(tableName, projection,
-                    null, null, null, null, sortBy);
-            cursor.moveToFirst();
-            int loopCount = (cursor.getCount() < 10) ? cursor.getCount() : 10;
-            for (int i = 9; i > (9 - loopCount); i--) {
-                savedXValues[i] = cursor.getFloat(cursor.getColumnIndex("xValue"));
-                savedYValues[i] = cursor.getFloat(cursor.getColumnIndex("yValue"));
-                savedZValues[i] = cursor.getFloat(cursor.getColumnIndex("zValue"));
-            }
-
-            tableExists = true;
-        } catch (Exception e) {
-            //table doesn't exist... Create new table with tableName...
-            createTableIfNotExist(tableName);
-            Log.d(TAG, tableName + " doesn't exist");
-        }
-        switch (whichValue) {
-            case 0:
-                value = savedXValues;
-                break;
-            case 1:
-                value = savedYValues;
-                break;
-            case 2:
-                value = savedZValues;
-                break;
-        }
+        float value[] = patientDbHelper.getPatientData(tableName,whichValue);
         return value;
-    }
-
-    private void createTableIfNotExist(String tableName) {
-        try {
-            mDataBase.beginTransaction();
-            try {
-                mDataBase.execSQL("create table if not exists " + tableName + " ("
-                        + " recordID integer PRIMARY KEY autoincrement, "
-                        + " xValue float, "
-                        + " yValue float, "
-                        + " zValue float, "
-                        + " timeStamp double ); ");
-
-                mDataBase.setTransactionSuccessful();
-                //populate data to database...
-            } catch (SQLiteException e) {
-                e.printStackTrace();
-            } finally {
-                mDataBase.endTransaction();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void populateDataToDb(float[] value, long timeStamp) {
-        try {
-            mDataBase.beginTransaction();
-            try {
-                ContentValues contentValues = new ContentValues();
-                contentValues.put("xValue", value[0]);
-                contentValues.put("yValue", value[1]);
-                contentValues.put("zValue", value[2]);
-                contentValues.put("timeStamp", timeStamp);
-                mDataBase.insert(this.tableName, null, contentValues);
-                //populate data to database...
-            } catch (SQLiteException e) {
-                e.printStackTrace();
-            } finally {
-                mDataBase.endTransaction();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     private class FetchAccelerometerDataThread extends Thread {
@@ -187,11 +111,15 @@ public class AccelerometerService extends Service implements SensorEventListener
                     msg.setData(bundle);
                     mHandler.sendMessage(msg);
                     //save value in database;
-                    populateDataToDb(value, timeStamp);
+                    patientDbHelper.insertPatientData(tableName,value,timeStamp);
+//                    populateDataToDb(value, timeStamp);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
+            Message msg = mHandler.obtainMessage();
+            msg.what = CLEAR_GRAPH;
+            mHandler.sendMessage(msg);
         }
     }
 

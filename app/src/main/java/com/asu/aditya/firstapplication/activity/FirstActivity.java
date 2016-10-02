@@ -157,9 +157,28 @@ public class FirstActivity extends Activity implements View.OnClickListener {
                     float testValue = msg.getData().getFloat("AxisValue");
                     setGraph(testValue);
                     break;
+
+                case AccelerometerService.CLEAR_GRAPH:
+                    clearGraphAndResetUI();
             }
         }
     };
+
+    private void clearGraphAndResetUI() {
+        Toast.makeText(this, "Graph Cleared", Toast.LENGTH_SHORT).show();
+        values = new float[10];
+        graphView.setValues(values);
+        graphView.setTitle(null);
+        graphView.invalidate();
+        btnStartGraph.setEnabled(true);
+        etPatientAge.setEnabled(true);
+        etPatientName.setEnabled(true);
+        etPatientId.setEnabled(true);
+        sexRadioGroup.setEnabled(true);
+        btnRadioMale.setEnabled(true);
+        btnRadioFemale.setEnabled(true);
+        btnStopGraph.setEnabled(false);
+    }
 
     private void fetchPreviousData(String tableName, int whichAxis) {
         values = mAccelerometerService.fetchInitialSetOfValues(tableName, whichAxis);
@@ -201,19 +220,6 @@ public class FirstActivity extends Activity implements View.OnClickListener {
                 if (mAccelerometerService != null)
                     mAccelerometerService.stopFetchingData();
                 //test code ends
-                Toast.makeText(this, "Graph Cleared", Toast.LENGTH_SHORT).show();
-                values = new float[10];
-                graphView.setValues(values);
-                graphView.setTitle(null);
-                graphView.invalidate();
-                btnStartGraph.setEnabled(true);
-                etPatientAge.setEnabled(true);
-                etPatientName.setEnabled(true);
-                etPatientId.setEnabled(true);
-                sexRadioGroup.setEnabled(true);
-                btnRadioMale.setEnabled(true);
-                btnRadioFemale.setEnabled(true);
-                btnStopGraph.setEnabled(false);
                 break;
         }
     }
