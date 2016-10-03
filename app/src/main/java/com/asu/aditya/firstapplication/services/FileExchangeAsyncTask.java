@@ -11,7 +11,6 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -34,7 +33,8 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
     private Context context;
     private ProgressDialog mProgressDialog;
     private PowerManager.WakeLock mWakeLock;
-    public static final String uploadServerUrl = "http://192.168.0.19/UploadToServer.php";
+//    public static final String uploadServerUrl = "http://192.168.0.19/UploadToServer.php";
+    public static final String uploadServerUrl = "https://impact.asu.edu/CSE535Spring16Folder/UploadToServer.php";
 
     public FileExchangeAsyncTask(Context context, ProgressDialog progressDialog) {
         this.context = context;
@@ -81,7 +81,7 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
 //        OutputStream output = null;
 //        OutputStream outputStream = null;
         DataOutputStream dataOutputStream = null;
-        HttpURLConnection connection = null;
+        HttpsURLConnection connection = null;
         FileInputStream fileInputStream = null;
         int bytesRead, bytesAvailable, bufferSize;
         String lineEnd = "\r\n";
@@ -111,7 +111,7 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
 
             sc.init(null, trustAllCerts, new SecureRandom());
 
-//            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
         } catch (KeyManagementException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
@@ -125,7 +125,7 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
 
             fileInputStream = new FileInputStream(sourceFile);
             URL url = new URL(uploadServerUrl);  // providing url to upload file
-            connection = (HttpURLConnection) url.openConnection();
+            connection = (HttpsURLConnection) url.openConnection();
             connection.setDoInput(true); // Allow Inputs
             connection.setDoOutput(true); // Allow Outputs
             connection.setUseCaches(false); // Don't use a Cached Copy
@@ -179,6 +179,7 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
                 String str =  "Server returned HTTP " + connection.getResponseCode()
                         + " " + connection.getResponseMessage();
                 Log.v(TAG,str);
+                return str;
             }
         } catch (Exception e) {
             return e.toString();
