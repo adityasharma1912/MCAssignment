@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">FirstApplication</string>
     <string name="action_settings">Settings</string>
+
+    <string-array name="values_array">
+        <item>x Value</item>
+        <item>y Value</item>
+        <item>z Value</item>
+    </string-array>
 </resources>

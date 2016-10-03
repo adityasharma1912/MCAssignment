@@ -1,11 +1,14 @@
 package com.asu.aditya.firstapplication.activity;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v7.widget.Toolbar;
@@ -20,6 +23,7 @@ import android.widget.Toast;
 
 import com.asu.aditya.firstapplication.R;
 import com.asu.aditya.firstapplication.services.AccelerometerService;
+import com.asu.aditya.firstapplication.services.FileExchangeAsyncTask;
 import com.asu.aditya.firstapplication.views.GraphView;
 
 /**
@@ -39,8 +43,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     private String[] horizontalLabels = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
     private GraphView graphView;
     private LinearLayout graph;
-    private boolean runnable = false;
-    private Button btnStartGraph, btnStopGraph;
+    private Button btnStartGraph, btnStopGraph, btnUploadDb, btnDownloadDb;
     private Toolbar toolbar;
     private Intent serviceIntent;
 
@@ -51,6 +54,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     private AccelerometerService mAccelerometerService;
     private Boolean mBound;
 
+    ProgressDialog mProgressDialog;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,6 +65,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         graph = (LinearLayout) findViewById(R.id.graph);
         btnStartGraph = (Button) findViewById(R.id.start_graph);
         btnStopGraph = (Button) findViewById(R.id.stop_graph);
+        btnUploadDb = (Button) findViewById(R.id.upload_db);
+        btnDownloadDb = (Button) findViewById(R.id.download_db);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         etPatientAge = (EditText) findViewById(R.id.patient_age);
         etPatientName = (EditText) findViewById(R.id.patient_name);
@@ -69,19 +76,39 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         btnRadioFemale = (RadioButton) findViewById(R.id.radioFemale);
 
         toolbar.setTitle("Group 22 - Assignment 2");
+        mProgressDialog = new ProgressDialog(this);
         serviceIntent = new Intent(FirstActivity.this, AccelerometerService.class);
         graphView = new GraphView(FirstActivity.this, horizontalLabels, verticalLabels, GraphView.LINE);
         graphView.setValues(values);
         graphView.setTitle(null);
         btnStartGraph.setOnClickListener(this);
         btnStopGraph.setOnClickListener(this);
+        btnUploadDb.setOnClickListener(this);
+        btnDownloadDb.setOnClickListener(this);
         btnStartGraph.setEnabled(true);
-        btnStopGraph.setEnabled(true);
+        btnStopGraph.setEnabled(false);
+        btnUploadDb.setEnabled(true);
+        btnDownloadDb.setEnabled(false);
         graph.addView(graphView);
 
         //star Service
         startService(serviceIntent);
 
+    }
+
+    private void UploadDatabase() {
+        final FileExchangeAsyncTask uploadDb = new FileExchangeAsyncTask(FirstActivity.this, mProgressDialog);
+        final String databasePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/databaseFolder/group22.db";
+//        uploadDb.execute("https://impact.asu.edu/"+appName,appName);
+        uploadDb.execute(databasePath);
+
+        mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                uploadDb.cancel(true);
+                Toast.makeText(FirstActivity.this, "Upload Canceled", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -93,7 +120,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onStop() {
         super.onStop();
-        unbindService(mServiceConnection);
+        if (mBound == true)
+            unbindService(mServiceConnection);
     }
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -123,7 +151,6 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     public void onDestroy() {
         super.onDestroy();
         stopService(serviceIntent);
-        runnable = false;
     }
 
 
@@ -177,6 +204,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         sexRadioGroup.setEnabled(true);
         btnRadioMale.setEnabled(true);
         btnRadioFemale.setEnabled(true);
+        btnUploadDb.setEnabled(true);
+        btnDownloadDb.setEnabled(false);
         btnStopGraph.setEnabled(false);
     }
 
@@ -209,6 +238,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
                     sexRadioGroup.setEnabled(false);
                     btnRadioMale.setEnabled(false);
                     btnRadioFemale.setEnabled(false);
+                    btnUploadDb.setEnabled(false);
+                    btnDownloadDb.setEnabled(false);
                     btnStopGraph.setEnabled(true);
                     String tableName = patient_name + "_"
                             + patient_id + "_" + patient_age + "_" + patient_sex;
@@ -216,10 +247,13 @@ public class FirstActivity extends Activity implements View.OnClickListener {
                 }
                 break;
             case R.id.stop_graph:
-                //test code
                 if (mAccelerometerService != null)
                     mAccelerometerService.stopFetchingData();
-                //test code ends
+                break;
+            case R.id.upload_db:
+                UploadDatabase();
+                break;
+            case R.id.download_db:
                 break;
         }
     }
