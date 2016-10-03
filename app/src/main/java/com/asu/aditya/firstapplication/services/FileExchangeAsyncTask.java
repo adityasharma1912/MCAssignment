@@ -4,13 +4,14 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.PowerManager;
+import android.util.Log;
 import android.widget.Toast;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -29,10 +30,11 @@ import javax.net.ssl.X509TrustManager;
 
 //async task params, progress and result...
 public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
+    private static final String TAG = FileExchangeAsyncTask.class.getCanonicalName();
     private Context context;
     private ProgressDialog mProgressDialog;
     private PowerManager.WakeLock mWakeLock;
-    public static final String uploadServerUrl = "https://impact.asu.edu/CSE535Fall16Folder/UploadToServer.php";
+    public static final String uploadServerUrl = "http://192.168.0.19/UploadToServer.php";
 
     public FileExchangeAsyncTask(Context context, ProgressDialog progressDialog) {
         this.context = context;
@@ -75,12 +77,16 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        InputStream input = null;
-        OutputStream output = null;
-        OutputStream outputStream = null;
-        HttpsURLConnection connection = null;
+//        InputStream input = null;
+//        OutputStream output = null;
+//        OutputStream outputStream = null;
+        DataOutputStream dataOutputStream = null;
+        HttpURLConnection connection = null;
         FileInputStream fileInputStream = null;
         int bytesRead, bytesAvailable, bufferSize;
+        String lineEnd = "\r\n";
+        String twoHyphens = "--";
+        String boundary = "*****";
         byte[] buffer;
         int maxBufferSize = 4 * 1024;
         String sourceFileUri = params[0];
@@ -105,7 +111,7 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
 
             sc.init(null, trustAllCerts, new SecureRandom());
 
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+//            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
         } catch (KeyManagementException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
@@ -119,16 +125,25 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
 
             fileInputStream = new FileInputStream(sourceFile);
             URL url = new URL(uploadServerUrl);  // providing url to upload file
-            connection = (HttpsURLConnection) url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
             connection.setDoInput(true); // Allow Inputs
             connection.setDoOutput(true); // Allow Outputs
             connection.setUseCaches(false); // Don't use a Cached Copy
             connection.setRequestMethod("POST");
-            connection.setRequestProperty("uploaded_file", sourceFileUri);
+            connection.setRequestProperty("Connection", "Keep-Alive");
+            connection.setRequestProperty("ENCTYPE", "multipart/form-data");
+            connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+            connection.setRequestProperty("uploaded_file",sourceFileUri);
 
-            connection.connect();
+            //creating new dataoutputstream
+            dataOutputStream = new DataOutputStream(connection.getOutputStream());
 
-            outputStream = connection.getOutputStream();
+            //writing bytes to data outputstream
+            dataOutputStream.writeBytes(twoHyphens + boundary + lineEnd);
+            dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""
+                    + sourceFileUri + "\"" + lineEnd);
+
+            dataOutputStream.writeBytes(lineEnd);
 
 
             bytesAvailable = fileInputStream.available();
@@ -142,7 +157,7 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
             bytesRead = fileInputStream.read(buffer, 0, bufferSize);
 
             while (bytesRead > 0) {
-                outputStream.write(buffer, 0, bufferSize);
+                dataOutputStream.write(buffer, 0, bufferSize);
                 bytesSent += bufferSize;
                 bytesAvailable = fileInputStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
@@ -150,18 +165,27 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
                 bytesRead = fileInputStream.read(buffer, 0, bufferSize);
             }
 
+            dataOutputStream.writeBytes(lineEnd);
+            dataOutputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+            int serverResponseCode = connection.getResponseCode();
+            String serverResponseMessage = connection.getResponseMessage();
+
+            Log.i(TAG, "Server Response is: " + serverResponseMessage + ": " + serverResponseCode);
+
             // expect HTTP 200 OK, so we don't mistakenly save error report
             // instead of the file
             if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
-                return "Server returned HTTP " + connection.getResponseCode()
+                String str =  "Server returned HTTP " + connection.getResponseCode()
                         + " " + connection.getResponseMessage();
+                Log.v(TAG,str);
             }
         } catch (Exception e) {
             return e.toString();
         } finally {
             try {
-                if (outputStream != null)
-                    outputStream.close();
+                if (dataOutputStream != null)
+                    dataOutputStream.close();
                 if (fileInputStream != null)
                     fileInputStream.close();
             } catch (IOException ignored) {

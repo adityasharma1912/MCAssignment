@@ -120,8 +120,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onStop() {
         super.onStop();
-        if (mBound == true)
-            unbindService(mServiceConnection);
+        unbindService(mServiceConnection);
     }
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
