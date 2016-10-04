@@ -56,7 +56,7 @@ public class GraphView extends View {
         float border = 20;
         float horstart = border * 2;
         float height = getHeight();
-        float width = getWidth() - 1;
+        float width = getWidth();
         float max = getMax();
         float min = getMin();
         float diff = max - min;
@@ -104,26 +104,28 @@ public class GraphView extends View {
                     canvas.drawRect((i * colwidth) + horstart, (border - h) + graphHeight, ((i * colwidth) + horstart) + (colwidth - 1), height - (border - 1), paint);
                 }
             } else {
-                float datalength = values.length;
-                float colwidth = (width - (2 * border)) / datalength;
-                float halfcol = colwidth / 2;
-                float lasth = 0;
-                for (int i = 0; i < values.length; i++) {
+                for (int i = 0; i < (values.length-1); i++) {
                     float val = values[i] - min;
                     float rat = val / diff;
-                    float h = graphHeight * rat;
-                    if (i > 0)
-                        paint.setColor(Color.GREEN);
+                    float current_height = graphHeight * rat;
+                    val = values[i+1]-min;
+                    rat = val/diff;
+                    float next_height = graphHeight*rat;
+                    paint.setColor(Color.GREEN);
                     paint.setStrokeWidth(4.0f);
-
-                    canvas.drawLine(((i - 1) * colwidth) + (horstart + 1) + halfcol, (border - lasth) + graphHeight, (i * colwidth) + (horstart + 1) + halfcol, (border - h) + graphHeight, paint);
-                    lasth = h;
+                    float startX = ((graphWidth / hors) * i) + horstart;
+                    float stopX = ((graphWidth / hors) * (i+1)) + horstart;
+                    float startY = (border - current_height) + graphHeight;
+                    float stopY = (border - next_height) + graphHeight;
+                    canvas.drawLine(startX, startY, stopX, stopY, paint);
                 }
             }
         }
     }
 
     private float getMax() {
+        if (true)
+            return 20;
         float largest = Integer.MIN_VALUE;
         for (int i = 0; i < values.length; i++)
             if (values[i] > largest)
@@ -132,6 +134,8 @@ public class GraphView extends View {
     }
 
     private float getMin() {
+        if (true)
+            return 0;
         float smallest = Integer.MAX_VALUE;
         for (int i = 0; i < values.length; i++)
             if (values[i] < smallest)

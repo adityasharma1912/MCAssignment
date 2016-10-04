@@ -78,6 +78,7 @@ public class PatientDbHelper extends SQLiteOpenHelper {
                 savedXValues[i] = cursor.getFloat(cursor.getColumnIndex("xValue"));
                 savedYValues[i] = cursor.getFloat(cursor.getColumnIndex("yValue"));
                 savedZValues[i] = cursor.getFloat(cursor.getColumnIndex("zValue"));
+                cursor.moveToNext();
             }
         } catch (Exception e) {
             //table doesn't exist... Create new table with tableName...

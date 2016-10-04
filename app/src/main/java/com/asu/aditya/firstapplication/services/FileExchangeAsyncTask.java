@@ -33,7 +33,7 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
     private Context context;
     private ProgressDialog mProgressDialog;
     private PowerManager.WakeLock mWakeLock;
-//    public static final String uploadServerUrl = "http://192.168.0.19/UploadToServer.php";
+    //    public static final String uploadServerUrl = "http://192.168.0.19/UploadToServer.php";
     public static final String uploadServerUrl = "https://impact.asu.edu/CSE535Spring16Folder/UploadToServer.php";
 
     public FileExchangeAsyncTask(Context context, ProgressDialog progressDialog) {
@@ -52,6 +52,10 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 getClass().getName());
         mWakeLock.acquire();
+        mProgressDialog.setMessage("Uploading Database");
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgressDialog.setCancelable(true);
         mProgressDialog.show();
     }
 
@@ -133,7 +137,7 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
             connection.setRequestProperty("Connection", "Keep-Alive");
             connection.setRequestProperty("ENCTYPE", "multipart/form-data");
             connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-            connection.setRequestProperty("uploaded_file",sourceFileUri);
+            connection.setRequestProperty("uploaded_file", sourceFileUri);
 
             //creating new dataoutputstream
             dataOutputStream = new DataOutputStream(connection.getOutputStream());
@@ -157,6 +161,8 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
             bytesRead = fileInputStream.read(buffer, 0, bufferSize);
 
             while (bytesRead > 0) {
+                if (isCancelled())
+                    return "Uploading Cancelled";
                 dataOutputStream.write(buffer, 0, bufferSize);
                 bytesSent += bufferSize;
                 bytesAvailable = fileInputStream.available();
@@ -176,9 +182,9 @@ public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
             // expect HTTP 200 OK, so we don't mistakenly save error report
             // instead of the file
             if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
-                String str =  "Server returned HTTP " + connection.getResponseCode()
+                String str = "Server returned HTTP " + connection.getResponseCode()
                         + " " + connection.getResponseMessage();
-                Log.v(TAG,str);
+                Log.v(TAG, str);
                 return str;
             }
         } catch (Exception e) {

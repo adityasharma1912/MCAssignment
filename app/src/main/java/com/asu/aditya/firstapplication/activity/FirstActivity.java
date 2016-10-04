@@ -14,11 +14,13 @@ import android.os.IBinder;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.asu.aditya.firstapplication.R;
@@ -30,7 +32,7 @@ import com.asu.aditya.firstapplication.views.GraphView;
  * Created by group22 on 9/5/16.
  */
 
-public class FirstActivity extends Activity implements View.OnClickListener {
+public class FirstActivity extends Activity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
     private static final String TAG = FirstActivity.class.getCanonicalName();
     /**
      * Variable Array for GraphView
@@ -53,6 +55,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     private RadioButton btnRadioMale, btnRadioFemale;
     private AccelerometerService mAccelerometerService;
     private Boolean mBound;
+    private Spinner valueSpinner;
+    int whichAxis = 0; //x-axis values are default.
 
     ProgressDialog mProgressDialog;
 
@@ -74,6 +78,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         sexRadioGroup = (RadioGroup) findViewById(R.id.radioSex);
         btnRadioMale = (RadioButton) findViewById(R.id.radioMale);
         btnRadioFemale = (RadioButton) findViewById(R.id.radioFemale);
+        valueSpinner = (Spinner) findViewById(R.id.value_spinner);
+        valueSpinner.setOnItemSelectedListener(this);
 
         toolbar.setTitle("Group 22 - Assignment 2");
         mProgressDialog = new ProgressDialog(this);
@@ -106,7 +112,6 @@ public class FirstActivity extends Activity implements View.OnClickListener {
             @Override
             public void onCancel(DialogInterface dialog) {
                 uploadDb.cancel(true);
-                Toast.makeText(FirstActivity.this, "Upload Canceled", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -200,6 +205,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
         etPatientAge.setEnabled(true);
         etPatientName.setEnabled(true);
         etPatientId.setEnabled(true);
+        valueSpinner.setEnabled(true);
         sexRadioGroup.setEnabled(true);
         btnRadioMale.setEnabled(true);
         btnRadioFemale.setEnabled(true);
@@ -211,6 +217,8 @@ public class FirstActivity extends Activity implements View.OnClickListener {
     private void fetchPreviousData(String tableName, int whichAxis) {
         values = mAccelerometerService.fetchInitialSetOfValues(tableName, whichAxis);
         //setting fetched data on GraphView...
+        for(int i=0;i< values.length;i++)
+            values[i]+=10;
         graphView.setValues(values);
         graphView.invalidate();
         if (mAccelerometerService != null)
@@ -234,6 +242,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
                     etPatientAge.setEnabled(false);
                     etPatientName.setEnabled(false);
                     etPatientId.setEnabled(false);
+                    valueSpinner.setEnabled(false);
                     sexRadioGroup.setEnabled(false);
                     btnRadioMale.setEnabled(false);
                     btnRadioFemale.setEnabled(false);
@@ -242,7 +251,7 @@ public class FirstActivity extends Activity implements View.OnClickListener {
                     btnStopGraph.setEnabled(true);
                     String tableName = patient_name + "_"
                             + patient_id + "_" + patient_age + "_" + patient_sex;
-                    fetchPreviousData(tableName, 0);
+                    fetchPreviousData(tableName, whichAxis);
                 }
                 break;
             case R.id.stop_graph:
@@ -283,5 +292,16 @@ public class FirstActivity extends Activity implements View.OnClickListener {
             return true;
         }
 
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        Log.v(TAG,"position : "+position);
+        whichAxis = position;
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        Log.v(TAG,"Nothing Selected");
     }
 }
