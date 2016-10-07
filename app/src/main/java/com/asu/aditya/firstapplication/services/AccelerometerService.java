@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.asu.aditya.firstapplication.database.PatientDbHelper;
@@ -129,7 +128,6 @@ public class AccelerometerService extends Service implements SensorEventListener
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.v(TAG, "onSensorChanged");
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             mSensorEvent = event;
 //            Log.v(TAG, "timestamp = " + event.timestamp + "value array length" + event.values.length);

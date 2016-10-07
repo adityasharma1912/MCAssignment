@@ -28,15 +28,15 @@ import javax.net.ssl.X509TrustManager;
  */
 
 //async task params, progress and result...
-public class FileExchangeAsyncTask extends AsyncTask<String, Integer, String> {
-    private static final String TAG = FileExchangeAsyncTask.class.getCanonicalName();
+public class UploadFileAsyncTask extends AsyncTask<String, Integer, String> {
+    private static final String TAG = UploadFileAsyncTask.class.getCanonicalName();
     private Context context;
     private ProgressDialog mProgressDialog;
     private PowerManager.WakeLock mWakeLock;
     //    public static final String uploadServerUrl = "http://192.168.0.19/UploadToServer.php";
-    public static final String uploadServerUrl = "https://impact.asu.edu/CSE535Spring16Folder/UploadToServer.php";
+    public static final String uploadServerUrl = "https://impact.asu.edu/CSE535Fall16Folder/UploadToServer.php";
 
-    public FileExchangeAsyncTask(Context context, ProgressDialog progressDialog) {
+    public UploadFileAsyncTask(Context context, ProgressDialog progressDialog) {
         this.context = context;
         mProgressDialog = progressDialog;
 

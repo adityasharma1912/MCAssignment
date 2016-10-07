@@ -25,7 +25,7 @@ import android.widget.Toast;
 
 import com.asu.aditya.firstapplication.R;
 import com.asu.aditya.firstapplication.services.AccelerometerService;
-import com.asu.aditya.firstapplication.services.FileExchangeAsyncTask;
+import com.asu.aditya.firstapplication.services.UploadFileAsyncTask;
 import com.asu.aditya.firstapplication.views.GraphView;
 
 /**
@@ -103,7 +103,7 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
     }
 
     private void UploadDatabase() {
-        final FileExchangeAsyncTask uploadDb = new FileExchangeAsyncTask(FirstActivity.this, mProgressDialog);
+        final UploadFileAsyncTask uploadDb = new UploadFileAsyncTask(FirstActivity.this, mProgressDialog);
         final String databasePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/databaseFolder/group22.db";
 //        uploadDb.execute("https://impact.asu.edu/"+appName,appName);
         uploadDb.execute(databasePath);
@@ -186,6 +186,7 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
 
                 case AccelerometerService.CLOCK_TICK:
                     float testValue = msg.getData().getFloat("AxisValue");
+                    Log.v(TAG,"Update Value Received : "+testValue);
                     setGraph(testValue);
                     break;
 
