@@ -1,5 +1,6 @@
 package com.asu.aditya.firstapplication.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
@@ -7,10 +8,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -24,7 +27,9 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.asu.aditya.firstapplication.R;
+import com.asu.aditya.firstapplication.database.PatientDbHelper;
 import com.asu.aditya.firstapplication.services.AccelerometerService;
+import com.asu.aditya.firstapplication.services.DownloadFileAsyncTask;
 import com.asu.aditya.firstapplication.services.UploadFileAsyncTask;
 import com.asu.aditya.firstapplication.views.GraphView;
 
@@ -32,8 +37,10 @@ import com.asu.aditya.firstapplication.views.GraphView;
  * Created by group22 on 9/5/16.
  */
 
-public class FirstActivity extends Activity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
+public class FirstActivity extends Activity implements View.OnClickListener, AdapterView.OnItemSelectedListener,
+        ActivityCompat.OnRequestPermissionsResultCallback {
     private static final String TAG = FirstActivity.class.getCanonicalName();
+    private static final int STORAGE_PERMISSIONS_REQUEST_CODE = 8503;
     /**
      * Variable Array for GraphView
      * verlabel : Background Height Values
@@ -94,19 +101,62 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
         btnStartGraph.setEnabled(true);
         btnStopGraph.setEnabled(false);
         btnUploadDb.setEnabled(true);
-        btnDownloadDb.setEnabled(false);
+        btnDownloadDb.setEnabled(true);
         graph.addView(graphView);
+        storagePermissionCheck();
 
         //star Service
         startService(serviceIntent);
 
     }
 
+    private void storagePermissionCheck() {
+        if (ContextCompat.checkSelfPermission(FirstActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(FirstActivity.this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    STORAGE_PERMISSIONS_REQUEST_CODE);
+
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case STORAGE_PERMISSIONS_REQUEST_CODE: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(FirstActivity.this,"Thanks for granting storage permission",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(FirstActivity.this,"Sorry but storage permissions are necessary",Toast.LENGTH_SHORT).show();
+                    FirstActivity.this.finish();
+                }
+                return;
+            }
+        }
+
+    }
+
     private void UploadDatabase() {
         final UploadFileAsyncTask uploadDb = new UploadFileAsyncTask(FirstActivity.this, mProgressDialog);
-        final String databasePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/databaseFolder/group22.db";
+        final String databasePath = PatientDbHelper.DATABASE_NAME;
 //        uploadDb.execute("https://impact.asu.edu/"+appName,appName);
         uploadDb.execute(databasePath);
+
+        mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                uploadDb.cancel(true);
+            }
+        });
+    }
+
+    private void DownloadDatabase() {
+        final DownloadFileAsyncTask uploadDb = new DownloadFileAsyncTask(FirstActivity.this, mProgressDialog);
+        final String databasePath = PatientDbHelper.DATABASE_NAME;
+        final String databaseNameToDownload = "group22.db";
+        uploadDb.execute(databaseNameToDownload, databasePath);
 
         mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
@@ -186,7 +236,7 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
 
                 case AccelerometerService.CLOCK_TICK:
                     float testValue = msg.getData().getFloat("AxisValue");
-                    Log.v(TAG,"Update Value Received : "+testValue);
+                    Log.v(TAG, "Update Value Received : " + testValue);
                     setGraph(testValue);
                     break;
 
@@ -211,15 +261,15 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
         btnRadioMale.setEnabled(true);
         btnRadioFemale.setEnabled(true);
         btnUploadDb.setEnabled(true);
-        btnDownloadDb.setEnabled(false);
+        btnDownloadDb.setEnabled(true);
         btnStopGraph.setEnabled(false);
     }
 
     private void fetchPreviousData(String tableName, int whichAxis) {
         values = mAccelerometerService.fetchInitialSetOfValues(tableName, whichAxis);
         //setting fetched data on GraphView...
-        for(int i=0;i< values.length;i++)
-            values[i]+=10;
+        for (int i = 0; i < values.length; i++)
+            values[i] += 10;
         graphView.setValues(values);
         graphView.invalidate();
         if (mAccelerometerService != null)
@@ -263,6 +313,7 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
                 UploadDatabase();
                 break;
             case R.id.download_db:
+                DownloadDatabase();
                 break;
         }
     }
@@ -297,12 +348,12 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        Log.v(TAG,"position : "+position);
+        Log.v(TAG, "position : " + position);
         whichAxis = position;
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-        Log.v(TAG,"Nothing Selected");
+        Log.v(TAG, "Nothing Selected");
     }
 }

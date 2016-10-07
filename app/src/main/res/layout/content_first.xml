@@ -137,7 +137,7 @@
             android:layout_height="match_parent"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@android:color/holo_green_dark"
+            android:background="@drawable/green_selector"
             android:text="RUN"
             android:textColor="@android:color/white" />
 
@@ -147,7 +147,7 @@
             android:layout_height="match_parent"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@android:color/holo_red_dark"
+            android:background="@drawable/red_selector"
             android:text="STOP"
             android:textColor="@android:color/white" />
 
@@ -170,9 +170,9 @@
 
             <Spinner
                 android:id="@+id/value_spinner"
-                android:entries="@array/values_array"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
+                android:entries="@array/values_array"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -182,7 +182,7 @@
             android:layout_height="match_parent"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@android:color/holo_green_dark"
+            android:background="@drawable/green_selector"
             android:text="UPLOAD DB"
             android:textColor="@android:color/white" />
 
@@ -192,7 +192,7 @@
             android:layout_height="match_parent"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@android:color/holo_red_dark"
+            android:background="@drawable/red_selector"
             android:text="DOWNLOAD DB"
             android:textColor="@android:color/white" />
 

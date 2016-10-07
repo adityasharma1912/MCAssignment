@@ -104,17 +104,17 @@ public class GraphView extends View {
                     canvas.drawRect((i * colwidth) + horstart, (border - h) + graphHeight, ((i * colwidth) + horstart) + (colwidth - 1), height - (border - 1), paint);
                 }
             } else {
-                for (int i = 0; i < (values.length-1); i++) {
+                for (int i = 0; i < (values.length - 1); i++) {
                     float val = values[i] - min;
                     float rat = val / diff;
                     float current_height = graphHeight * rat;
-                    val = values[i+1]-min;
-                    rat = val/diff;
-                    float next_height = graphHeight*rat;
+                    val = values[i + 1] - min;
+                    rat = val / diff;
+                    float next_height = graphHeight * rat;
                     paint.setColor(Color.GREEN);
                     paint.setStrokeWidth(4.0f);
                     float startX = ((graphWidth / hors) * i) + horstart;
-                    float stopX = ((graphWidth / hors) * (i+1)) + horstart;
+                    float stopX = ((graphWidth / hors) * (i + 1)) + horstart;
                     float startY = (border - current_height) + graphHeight;
                     float stopY = (border - next_height) + graphHeight;
                     canvas.drawLine(startX, startY, stopX, stopY, paint);

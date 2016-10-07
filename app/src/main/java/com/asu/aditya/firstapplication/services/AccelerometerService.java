@@ -90,7 +90,7 @@ public class AccelerometerService extends Service implements SensorEventListener
     public float[] fetchInitialSetOfValues(String tableName, int whichValue) {
         this.tableName = tableName;
         this.whichAxis = whichValue;
-        float value[] = patientDbHelper.getPatientData(tableName,whichValue);
+        float value[] = patientDbHelper.getPatientData(tableName, whichValue);
         return value;
     }
 
@@ -110,7 +110,7 @@ public class AccelerometerService extends Service implements SensorEventListener
                     msg.setData(bundle);
                     mHandler.sendMessage(msg);
                     //save value in database;
-                    patientDbHelper.insertPatientData(tableName,value,timeStamp);
+                    patientDbHelper.insertPatientData(tableName, value, timeStamp);
 //                    populateDataToDb(value, timeStamp);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
