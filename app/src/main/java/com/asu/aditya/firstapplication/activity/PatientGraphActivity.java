@@ -37,9 +37,9 @@ import com.asu.aditya.firstapplication.views.GraphView;
  * Created by group22 on 9/5/16.
  */
 
-public class FirstActivity extends Activity implements View.OnClickListener, AdapterView.OnItemSelectedListener,
+public class PatientGraphActivity extends Activity implements View.OnClickListener, AdapterView.OnItemSelectedListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
-    private static final String TAG = FirstActivity.class.getCanonicalName();
+    private static final String TAG = PatientGraphActivity.class.getCanonicalName();
     private static final int STORAGE_PERMISSIONS_REQUEST_CODE = 8503;
     /**
      * Variable Array for GraphView
@@ -90,8 +90,8 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
 
         toolbar.setTitle("Group 22 - Assignment 2");
         mProgressDialog = new ProgressDialog(this);
-        serviceIntent = new Intent(FirstActivity.this, AccelerometerService.class);
-        graphView = new GraphView(FirstActivity.this, horizontalLabels, verticalLabels, GraphView.LINE);
+        serviceIntent = new Intent(PatientGraphActivity.this, AccelerometerService.class);
+        graphView = new GraphView(PatientGraphActivity.this, horizontalLabels, verticalLabels, GraphView.LINE);
         graphView.setValues(values);
         graphView.setTitle(null);
         btnStartGraph.setOnClickListener(this);
@@ -111,10 +111,10 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
     }
 
     private void storagePermissionCheck() {
-        if (ContextCompat.checkSelfPermission(FirstActivity.this,
+        if (ContextCompat.checkSelfPermission(PatientGraphActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(FirstActivity.this,
+            ActivityCompat.requestPermissions(PatientGraphActivity.this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     STORAGE_PERMISSIONS_REQUEST_CODE);
 
@@ -127,10 +127,10 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
             case STORAGE_PERMISSIONS_REQUEST_CODE: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(FirstActivity.this,"Thanks for granting storage permission",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PatientGraphActivity.this,"Thanks for granting storage permission",Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(FirstActivity.this,"Sorry but storage permissions are necessary",Toast.LENGTH_SHORT).show();
-                    FirstActivity.this.finish();
+                    Toast.makeText(PatientGraphActivity.this,"Sorry but storage permissions are necessary",Toast.LENGTH_SHORT).show();
+                    PatientGraphActivity.this.finish();
                 }
                 return;
             }
@@ -139,7 +139,7 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
     }
 
     private void UploadDatabase() {
-        final UploadFileAsyncTask uploadDb = new UploadFileAsyncTask(FirstActivity.this, mProgressDialog);
+        final UploadFileAsyncTask uploadDb = new UploadFileAsyncTask(PatientGraphActivity.this, mProgressDialog);
         final String databasePath = PatientDbHelper.DATABASE_NAME;
 //        uploadDb.execute("https://impact.asu.edu/"+appName,appName);
         uploadDb.execute(databasePath);
@@ -153,7 +153,7 @@ public class FirstActivity extends Activity implements View.OnClickListener, Ada
     }
 
     private void DownloadDatabase() {
-        final DownloadFileAsyncTask uploadDb = new DownloadFileAsyncTask(FirstActivity.this, mProgressDialog);
+        final DownloadFileAsyncTask uploadDb = new DownloadFileAsyncTask(PatientGraphActivity.this, mProgressDialog);
         final String databasePath = PatientDbHelper.DATABASE_NAME;
         final String databaseNameToDownload = "group22.db";
         uploadDb.execute(databaseNameToDownload, databasePath);

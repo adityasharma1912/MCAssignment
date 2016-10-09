@@ -40,7 +40,7 @@ public class GraphView extends View {
     }
 
     /*
-    setValues method is used my FirstActivity
+    setValues method is used my PatientGraphActivity
     to send updated values to the graph view.
      */
     public void setValues(float[] newValues) {
