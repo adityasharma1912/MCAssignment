@@ -34,7 +34,7 @@ import com.asu.aditya.firstapplication.services.UploadFileAsyncTask;
 import com.asu.aditya.firstapplication.views.GraphView;
 
 /**
- * Created by group22 on 9/5/16.
+ * Created by group22 on 10/5/16.
  */
 
 public class PatientGraphActivity extends Activity implements View.OnClickListener, AdapterView.OnItemSelectedListener,
@@ -43,8 +43,8 @@ public class PatientGraphActivity extends Activity implements View.OnClickListen
     private static final int STORAGE_PERMISSIONS_REQUEST_CODE = 8503;
     /**
      * Variable Array for GraphView
-     * verlabel : Background Height Values
-     * horlabel : Background Width Values
+     * verticalLabels : Background Height Values
+     * horizontalLabel : Background Width Values
      * values : Max Values of Foreground Active Graph
      */
     private float[] values = new float[10];
@@ -138,7 +138,7 @@ public class PatientGraphActivity extends Activity implements View.OnClickListen
 
     }
 
-    private void UploadDatabase() {
+    private void uploadDatabase() {
         final UploadFileAsyncTask uploadDb = new UploadFileAsyncTask(PatientGraphActivity.this, mProgressDialog);
         final String databasePath = PatientDbHelper.DATABASE_NAME;
 //        uploadDb.execute("https://impact.asu.edu/"+appName,appName);
@@ -152,7 +152,7 @@ public class PatientGraphActivity extends Activity implements View.OnClickListen
         });
     }
 
-    private void DownloadDatabase() {
+    private void downloadDatabase() {
         final DownloadFileAsyncTask uploadDb = new DownloadFileAsyncTask(PatientGraphActivity.this, mProgressDialog);
         final String databasePath = PatientDbHelper.DATABASE_NAME;
         final String databaseNameToDownload = "group22.db";
@@ -246,6 +246,10 @@ public class PatientGraphActivity extends Activity implements View.OnClickListen
         }
     };
 
+
+    /*
+    Method to reset variables and User interface.
+     */
     private void clearGraphAndResetUI() {
         Toast.makeText(this, "Graph Cleared", Toast.LENGTH_SHORT).show();
         values = new float[10];
@@ -265,6 +269,9 @@ public class PatientGraphActivity extends Activity implements View.OnClickListen
         btnStopGraph.setEnabled(false);
     }
 
+    /*
+    Method to fetch data of last 10 seconds from downloaded database.
+     */
     private void fetchPreviousData(String tableName, int whichAxis) {
         values = mAccelerometerService.fetchInitialSetOfValues(tableName, whichAxis);
         //setting fetched data on GraphView...
@@ -310,10 +317,10 @@ public class PatientGraphActivity extends Activity implements View.OnClickListen
                     mAccelerometerService.stopFetchingData();
                 break;
             case R.id.upload_db:
-                UploadDatabase();
+                uploadDatabase();
                 break;
             case R.id.download_db:
-                DownloadDatabase();
+                downloadDatabase();
                 break;
         }
     }

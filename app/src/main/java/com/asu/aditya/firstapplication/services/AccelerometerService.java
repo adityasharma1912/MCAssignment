@@ -3,7 +3,6 @@ package com.asu.aditya.firstapplication.services;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -27,7 +26,6 @@ public class AccelerometerService extends Service implements SensorEventListener
     private SensorManager accelerometerManage;
     private Sensor senseAccelerometer;
     private IBinder mBinder = new LocalBinder();
-    SQLiteDatabase mDataBase;
     private SensorEvent mSensorEvent;
     private Boolean doFetchData;
     private Handler mHandler;
@@ -50,14 +48,6 @@ public class AccelerometerService extends Service implements SensorEventListener
 
         //create database in external directory...
         patientDbHelper = new PatientDbHelper(getApplicationContext());
-//
-//        try {
-//            String externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
-//            mDataBase = openOrCreateDatabase(externalStorageDirectory + "/databaseFolder/group22.db", SQLiteDatabase.CREATE_IF_NECESSARY|SQLiteDatabase.OPEN_READWRITE, null);
-////            mDataBase = SQLiteDatabase.openOrCreateDatabase(externalStorageDirectory + "/databaseFolder/group22.db", SQLiteDatabase.CREATE_IF_NECESSARY,null);
-//        } catch (SQLiteException se) {
-//            se.printStackTrace();
-//        }
         Toast.makeText(this, "Service Started", Toast.LENGTH_LONG).show();
         accelerometerManage = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senseAccelerometer = accelerometerManage.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -99,6 +89,9 @@ public class AccelerometerService extends Service implements SensorEventListener
         public void run() {
             while (doFetchData) {
                 try {
+                    /*
+                    Since frequency is 1Hz there fore sleep of 1 second is introduced.
+                     */
                     Thread.sleep(1000);
                     Message msg = mHandler.obtainMessage();
                     msg.what = CLOCK_TICK;
@@ -111,7 +104,6 @@ public class AccelerometerService extends Service implements SensorEventListener
                     mHandler.sendMessage(msg);
                     //save value in database;
                     patientDbHelper.insertPatientData(tableName, value, timeStamp);
-//                    populateDataToDb(value, timeStamp);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -130,10 +122,6 @@ public class AccelerometerService extends Service implements SensorEventListener
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             mSensorEvent = event;
-//            Log.v(TAG, "timestamp = " + event.timestamp + "value array length" + event.values.length);
-//            Log.v(TAG, "X = " + event.values[0]);
-//            Log.v(TAG, "Y = " + event.values[1]);
-//            Log.v(TAG, "Z = " + event.values[2]);
         }
     }
 

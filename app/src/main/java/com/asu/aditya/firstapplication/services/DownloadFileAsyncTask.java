@@ -24,6 +24,10 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * Created by aditya on 10/7/16.
+ *
+ * Using code provide by professor.
+ *
+ * Separate AsyncTask to download database file from impact lab server.
  */
 public class DownloadFileAsyncTask extends AsyncTask<String, Integer, String> {
 
@@ -39,7 +43,6 @@ public class DownloadFileAsyncTask extends AsyncTask<String, Integer, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        //searchButton = (Button) findViewById(R.id.button1);
         InputStream input = null;
         OutputStream output = null;
         HttpsURLConnection connection = null;
@@ -128,19 +131,21 @@ public class DownloadFileAsyncTask extends AsyncTask<String, Integer, String> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        // take CPU lock to prevent CPU from going off if the user
-        // presses the power button during download
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 getClass().getName());
         mWakeLock.acquire();
+        mProgressDialog.setMessage("Downloading Database");
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgressDialog.setCancelable(true);
+        mProgressDialog.show();
         mProgressDialog.show();
     }
 
     @Override
     protected void onProgressUpdate(Integer... progress) {
         super.onProgressUpdate(progress);
-        // if we get here, length is known, now set indeterminate to false
         mProgressDialog.setIndeterminate(false);
         mProgressDialog.setMax(100);
         mProgressDialog.setProgress(progress[0]);

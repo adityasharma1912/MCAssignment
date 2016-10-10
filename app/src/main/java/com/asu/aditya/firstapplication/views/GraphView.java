@@ -9,8 +9,8 @@ import android.view.View;
 
 /**
  * GraphView creates a scaled line or bar graph with x and y axis labels.
- *
- * @author Arno den Hond
+ * <p>
+ * Using code provide by professor with some modifications.
  */
 public class GraphView extends View {
 
@@ -23,6 +23,9 @@ public class GraphView extends View {
     private String[] verlabels;
     private String title;
     private boolean type;
+    private static final int MAX_Y_VALUE = 20;
+    private static final int MIN_Y_VALUE = 0;
+
 
     public GraphView(Context context, String[] horlabels, String[] verlabels, boolean type) {
         super(context);
@@ -124,23 +127,11 @@ public class GraphView extends View {
     }
 
     private float getMax() {
-        if (true)
-            return 20;
-        float largest = Integer.MIN_VALUE;
-        for (int i = 0; i < values.length; i++)
-            if (values[i] > largest)
-                largest = values[i];
-        return largest;
+        return MAX_Y_VALUE;
     }
 
     private float getMin() {
-        if (true)
-            return 0;
-        float smallest = Integer.MAX_VALUE;
-        for (int i = 0; i < values.length; i++)
-            if (values[i] < smallest)
-                smallest = values[i];
-        return smallest;
+        return MIN_Y_VALUE;
     }
 
 }

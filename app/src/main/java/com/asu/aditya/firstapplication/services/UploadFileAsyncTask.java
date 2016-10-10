@@ -25,6 +25,8 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * Created by aditya on 10/2/16.
+ *
+ * AsyncTask to upload database file from impact lab server.
  */
 
 //async task params, progress and result...
@@ -39,15 +41,12 @@ public class UploadFileAsyncTask extends AsyncTask<String, Integer, String> {
     public UploadFileAsyncTask(Context context, ProgressDialog progressDialog) {
         this.context = context;
         mProgressDialog = progressDialog;
-
     }
 
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        // take CPU lock to prevent CPU from going off if the user
-        // presses the power button during download
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 getClass().getName());
@@ -81,9 +80,6 @@ public class UploadFileAsyncTask extends AsyncTask<String, Integer, String> {
 
     @Override
     protected String doInBackground(String... params) {
-//        InputStream input = null;
-//        OutputStream output = null;
-//        OutputStream outputStream = null;
         DataOutputStream dataOutputStream = null;
         HttpsURLConnection connection = null;
         FileInputStream fileInputStream = null;
@@ -202,81 +198,5 @@ public class UploadFileAsyncTask extends AsyncTask<String, Integer, String> {
                 connection.disconnect();
         }
         return null;
-
-
-//        try {
-//            URL url = new URL(uploadServerUrl);
-//            connection = (HttpsURLConnection) url.openConnection();
-//            connection.connect();
-//
-//            // expect HTTP 200 OK, so we don't mistakenly save error report
-//            // instead of the file
-//            if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
-//                return "Server returned HTTP " + connection.getResponseCode()
-//                        + " " + connection.getResponseMessage();
-//            }
-//
-//            //downloadButton.setText(Integer.toString(fileLength));
-//            // download the file
-//            input = new FileInputStream(sourceFileUri);
-//            output = connection.getOutputStream();
-//
-//
-//
-//            bytesAvailable = fileInputStream.available();
-//            int totalBytesAvailable = bytesAvailable;
-//            int bytesSent = 0;
-//
-//            bufferSize = Math.min(bytesAvailable, maxBufferSize);
-//            buffer = new byte[bufferSize];
-//
-//            // read file and write it into form...
-//            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-//
-//            while (bytesRead > 0) {
-//                if (isCancelled()) {
-//                    input.close();
-//                    return "uploading cancelled";
-//                }
-//                output.write(buffer, 0, bufferSize);
-//                bytesSent += bufferSize;
-//                bytesAvailable = fileInputStream.available();
-//                bufferSize = Math.min(bytesAvailable, maxBufferSize);
-//                publishProgress((int) (bytesSent * 100 / totalBytesAvailable));
-//                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-//            }
-//
-//            //downloadButton.setText("Connecting .....");
-////            byte data[] = new byte[4096];
-////            long total = 0;
-////            int count;
-////            while ((count = input.read(data)) != -1) {
-////                // allow canceling with back button
-////                if (isCancelled()) {
-////                    input.close();
-////                    return "uploading cancelled";
-////                }
-////                total += count;
-////                // publishing the progress....
-////                if (fileLength > 0) // only if total length is known
-////                    publishProgress((int) (total * 100 / fileLength));
-////                output.write(data, 0, count);
-////            }
-//        } catch (Exception e) {
-//            return e.toString();
-//        } finally {
-//            try {
-//                if (output != null)
-//                    output.close();
-//                if (input != null)
-//                    input.close();
-//            } catch (IOException ignored) {
-//                return ignored.toString();
-//            }
-//
-//            if (connection != null)
-//                connection.disconnect();
-//        }
-//        return null;
     }
 }
